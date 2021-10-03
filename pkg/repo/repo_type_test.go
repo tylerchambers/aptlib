@@ -8,16 +8,20 @@ func TestRepoType_IsValid(t *testing.T) {
 		rt   RepoType
 		want bool
 	}{
-		{"binary repository type",
-			"deb",
-			true,
+		{
+			name: "binary repository type",
+			rt:   "deb",
+			want: true,
 		},
-		{"source repository type",
-			"deb-src",
-			true,
-		}, {"invalid repository type",
-			"zzz",
-			false,
+		{
+			name: "source repository type",
+			rt:   "deb-src",
+			want: true,
+		},
+		{
+			name: "invalid repository type",
+			rt:   "zzz",
+			want: false,
 		},
 	}
 	for _, tt := range tests {
