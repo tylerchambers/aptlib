@@ -43,70 +43,92 @@ func TestSourceFromString(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"new source from valid source file entry",
-			args{"deb http://us.archive.ubuntu.com/ubuntu/ focal main restricted"},
-			&SourceEntry{"deb", nil, "http://us.archive.ubuntu.com/ubuntu/", "focal", []string{"main", "restricted"}},
-			false,
+			name: "new source from valid source file entry",
+			args: args{
+				sourceEntry: "deb http://us.archive.ubuntu.com/ubuntu/ focal main restricted",
+			},
+			want:    &SourceEntry{"deb", nil, "http://us.archive.ubuntu.com/ubuntu/", "focal", []string{"main", "restricted"}},
+			wantErr: false,
 		},
 		{
-			"new source from valid source file entry including options",
-			args{"deb [arch=amd64 hello=world] http://dl.google.com/linux/chrome/deb/ stable main"},
-			&SourceEntry{"deb", map[string]string{"arch": "amd64", "hello": "world"}, "http://dl.google.com/linux/chrome/deb/", "stable", []string{"main"}},
-			false,
+			name: "new source from valid source file entry including options",
+			args: args{
+				sourceEntry: "deb [arch=amd64 hello=world] http://dl.google.com/linux/chrome/deb/ stable main",
+			},
+			want:    &SourceEntry{"deb", map[string]string{"arch": "amd64", "hello": "world"}, "http://dl.google.com/linux/chrome/deb/", "stable", []string{"main"}},
+			wantErr: false,
 		},
 		{
-			"invalid options (empty)",
-			args{"deb [] http://dl.google.com/linux/chrome/deb/ stable main"},
-			nil,
-			true,
+			name: "invalid options (empty)",
+			args: args{
+				sourceEntry: "deb [] http://dl.google.com/linux/chrome/deb/ stable main",
+			},
+			want:    nil,
+			wantErr: true,
 		},
 		{
-			"invalid options (too short)",
-			args{"deb [aa] http://dl.google.com/linux/chrome/deb/ stable main"},
-			nil,
-			true,
+			name: "invalid options (too short)",
+			args: args{
+				sourceEntry: "deb [aa] http://dl.google.com/linux/chrome/deb/ stable main",
+			},
+			want:    nil,
+			wantErr: true,
 		},
 		{
-			"invalid option (no key value seperated by equals)",
-			args{"deb [foo=bar baz] http://dl.google.com/linux/chrome/deb/ stable main"},
-			nil,
-			true,
+			name: "invalid option (no key value seperated by equals)",
+			args: args{
+				sourceEntry: "deb [foo=bar baz] http://dl.google.com/linux/chrome/deb/ stable main",
+			},
+			want:    nil,
+			wantErr: true,
 		},
 		{
-			"invalid option (nested brackets)",
-			args{"deb [[]] http://dl.google.com/linux/chrome/deb/ stable main"},
-			nil,
-			true,
+			name: "invalid option (nested brackets)",
+			args: args{
+				sourceEntry: "deb [[]] http://dl.google.com/linux/chrome/deb/ stable main",
+			},
+			want:    nil,
+			wantErr: true,
 		},
 		{
-			"new source from source file entry with invalid type",
-			args{"zzz http://us.archive.ubuntu.com/ubuntu/ focal main restricted"},
-			nil,
-			true,
+			name: "new source from source file entry with invalid type",
+			args: args{
+				sourceEntry: "zzz http://us.archive.ubuntu.com/ubuntu/ focal main restricted",
+			},
+			want:    nil,
+			wantErr: true,
 		},
 		{
-			"new source from source file entry with invalid URI",
-			args{"deb asdfasdfasdf focal main restricted"},
-			nil,
-			true,
+			name: "new source from source file entry with invalid URI",
+			args: args{
+				sourceEntry: "deb asdfasdfasdf focal main restricted",
+			},
+			want:    nil,
+			wantErr: true,
 		},
 		{
-			"new source from source file entry with invalid URI",
-			args{"deb asdfasdfasdf focal main restricted"},
-			nil,
-			true,
+			name: "new source from source file entry with invalid URI",
+			args: args{
+				sourceEntry: "deb asdfasdfasdf focal main restricted",
+			},
+			want:    nil,
+			wantErr: true,
 		},
 		{
-			"new source from source file entry with too few fields",
-			args{"deb asdfasdfasdf focal"},
-			nil,
-			true,
+			name: "new source from source file entry with too few fields",
+			args: args{
+				sourceEntry: "deb asdfasdfasdf focal",
+			},
+			want:    nil,
+			wantErr: true,
 		},
 		{
-			"new source from blank line",
-			args{""},
-			nil,
-			true,
+			name: "new source from blank line",
+			args: args{
+				sourceEntry: "",
+			},
+			want:    nil,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
