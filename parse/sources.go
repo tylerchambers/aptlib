@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/tylerchambers/goapt/pkg/repo"
+	"github.com/tylerchambers/aptlib/repo"
 )
 
 // SourcesListFromPath parses sources in a given io.Reader.

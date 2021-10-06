@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tylerchambers/goapt/pkg/repo"
+	"github.com/tylerchambers/aptlib/repo"
 )
 
 func logAndFail(t *testing.T, got, want []*repo.SourceEntry) {
