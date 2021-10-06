@@ -1,3 +1,3 @@
-module github.com/tylerchambers/goapt
+module github.com/tylerchambers/aptlib
 
 go 1.17

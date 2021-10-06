@@ -24,6 +24,7 @@ func NewSource(rt RepoType, options map[string]string, URI string, dist string, 
 // SourceFromString validates a sources.list entry and if valid returns a source type.
 // TODO (tylerchambers): "distribution may also contain a variable, $(ARCH) which expands to the Debian architecture (i386, m68k, powerpc, ...) used on the system"
 // I have never seen this in the wild, but we should probably support it eventually.
+// TODO (tylerchambers): Options may be LISTS :( VSCode uses this for arch.
 func SourceFromString(line string) (*SourceEntry, error) {
 	entry := strings.Fields(line)
 	if len(entry) < 4 {

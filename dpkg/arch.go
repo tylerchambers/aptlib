@@ -5,7 +5,7 @@ import (
 	"os/exec"
 	"strings"
 )
-
+// GetHostArch gets the host architecture from dpkg.
 func GetHostArch() (string, error) {
 	cmd := exec.Command("dpkg-architecture", "-q", "DEB_HOST_ARCH")
 
