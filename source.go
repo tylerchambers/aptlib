@@ -1,4 +1,4 @@
-package repo
+package aptlib
 
 import (
 	"fmt"

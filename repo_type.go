@@ -1,4 +1,4 @@
-package repo
+package aptlib
 
 // RepoType represents the types of repos in apt.
 type RepoType string

@@ -1,4 +1,4 @@
-package update
+package aptlib
 
 import (
 	"bytes"
@@ -11,16 +11,13 @@ import (
 	"os"
 	"strings"
 	"sync"
-
-	"github.com/tylerchambers/aptlib/dpkg"
-	"github.com/tylerchambers/aptlib/repo"
 )
 
 // BuildRepoURIs generates valid apt repo URIs from a sources.list.
 // TODO (tylerchambers): This should properly parse the URI
 // and support file,cdrom,http,ftp,copy,rsh/ssh,etc.
 // For now we're focusing on HTTP because it's the most common.
-func BuildRepoURIs(s *repo.SourceEntry) ([]string, error) {
+func BuildRepoURIs(s *SourceEntry) ([]string, error) {
 	repoURIs := []string{}
 
 	for _, v := range s.Components {
@@ -37,7 +34,7 @@ func BuildRepoURIs(s *repo.SourceEntry) ([]string, error) {
 			if val, ok := s.Options["arch"]; ok {
 				repoURIs[i] = repoURIs[i] + val
 			} else {
-				arch, err := dpkg.GetHostArch()
+				arch, err := GetHostArch()
 				if err != nil {
 					return nil, fmt.Errorf("could not identify host arch: %v", err)
 				}

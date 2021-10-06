@@ -1,4 +1,4 @@
-package parse
+package aptlib
 
 import (
 	"bufio"
@@ -6,19 +6,17 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-
-	"github.com/tylerchambers/aptlib/repo"
 )
 
 // SourcesListFromPath parses sources in a given io.Reader.
-func SourcesList(r io.Reader) ([]*repo.SourceEntry, error) {
-	out := []*repo.SourceEntry{}
+func SourcesList(r io.Reader) ([]*SourceEntry, error) {
+	out := []*SourceEntry{}
 	scanner := bufio.NewScanner(r)
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		if !strings.HasPrefix(line, "#") && len(line) > 0 {
-			source, err := repo.SourceFromString(line)
+			source, err := SourceFromString(line)
 			if err != nil {
 				return nil, err
 			}
@@ -32,7 +30,7 @@ func SourcesList(r io.Reader) ([]*repo.SourceEntry, error) {
 }
 
 // AllSources checks default locations for sources.list and parses everything it finds.
-func AllSources() ([]*repo.SourceEntry, error) {
+func AllSources() ([]*SourceEntry, error) {
 	out, err := SourcesFromFile("/etc/apt/sources.list")
 	if err != nil {
 		return nil, err
@@ -57,7 +55,7 @@ func AllSources() ([]*repo.SourceEntry, error) {
 }
 
 // SourcesFromFile parses a sources.list at a given path.
-func SourcesFromFile(path string) ([]*repo.SourceEntry, error) {
+func SourcesFromFile(path string) ([]*SourceEntry, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err

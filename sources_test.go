@@ -1,15 +1,13 @@
-package parse
+package aptlib
 
 import (
 	"io"
 	"reflect"
 	"strings"
 	"testing"
-
-	"github.com/tylerchambers/aptlib/repo"
 )
 
-func logAndFail(t *testing.T, got, want []*repo.SourceEntry) {
+func logAndFail(t *testing.T, got, want []*SourceEntry) {
 	t.Logf("SourcesList() = ")
 	for _, v := range got {
 		t.Logf("%v,\n", *v)
@@ -27,7 +25,7 @@ func TestSourcesList(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []*repo.SourceEntry
+		want    []*SourceEntry
 		wantErr bool
 	}{
 		{
@@ -37,7 +35,7 @@ func TestSourcesList(t *testing.T) {
 					"deb http://security.ubuntu.com/ubuntu focal-security multiverse\n" +
 					"deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu   focal stable test"),
 			},
-			want: []*repo.SourceEntry{
+			want: []*SourceEntry{
 				{
 					RepoType:     "deb",
 					Options:      map[string]string{},
