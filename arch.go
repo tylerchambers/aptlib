@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// GetHostArch gets the host architecture from dpkg.
-func GetHostArch() (string, error) {
+// AutoDetectHostArch detects the host architecture using dpkg and sets the client to match.
+func (c *Client) AutoDetectHostArch() error {
 	cmd := exec.Command("dpkg-architecture", "-q", "DEB_HOST_ARCH")
 
 	var out bytes.Buffer
@@ -16,8 +16,9 @@ func GetHostArch() (string, error) {
 	err := cmd.Run()
 
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return strings.TrimSuffix(out.String(), "\n"), nil
+	c.Arch = strings.TrimSuffix(out.String(), "\n")
+	return nil
 }
