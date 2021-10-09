@@ -16,7 +16,7 @@ type Client struct {
 	SourceLists []string
 	// The actual parsed entries
 	SourceEntries []*SourceEntry
-	// Where to store the pacakge index files
+	// Where to store the package index files
 	IndexLocation  string
 	IndexGZStaging string
 	RepoURIs       []string
@@ -36,7 +36,7 @@ func NewClient(infoLogger, warningLogger, errorLogger *log.Logger, sourceLists [
 	return c
 }
 
-// Initi initializes a client with sane defaults.
+// Init initializes a client with sane defaults.
 func (c *Client) Init() error {
 	if c.InfoLogger == nil {
 		c.InfoLogger = log.New(os.Stdout, "INFO: ", log.LstdFlags)

@@ -57,14 +57,14 @@ func (c *Client) BuildRepoURIs() {
 		// valid-until-min, check-date, date-max-future, inrelease-path
 		// TODO (tylerchambers): add logging
 		// TODO (tylerchambers): store the gzipped files in tmp or something
-		// then ungzip to /var/lib/goapt/lists/
+		// then ungzip to
 		c.RepoURIs = append(c.RepoURIs, repoURIs...)
 
 	}
 }
 
 // DownloadIndicies concurrently downloads from URIs.
-// cons is the number of simultanerous connections. If it's < 0 a new connection
+// cons is the number of simultaneous connections. If it's < 0 a new connection
 // is established for each URI.
 func (c *Client) DownloadIndicies() error {
 	c.InfoLogger.Println("starting index download.")
