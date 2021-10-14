@@ -38,7 +38,15 @@ func (c *Client) BuildRepoURIs() {
 
 				repoURIs[i] = v + "binary-"
 				if val, ok := s.Options["arch"]; ok {
-					repoURIs[i] = repoURIs[i] + val
+					arches := strings.Split(val, ",")
+					base := repoURIs[i]
+					for j, v := range arches {
+						if j == 0 {
+							repoURIs[i] = base + v
+						} else {
+							repoURIs = append(repoURIs, base+v)
+						}
+					}
 				} else {
 					arch := c.Arch
 					repoURIs[i] = repoURIs[i] + arch
@@ -63,10 +71,10 @@ func (c *Client) BuildRepoURIs() {
 	}
 }
 
-// DownloadIndicies concurrently downloads from URIs.
+// DownloadIndiciesAsync concurrently downloads from URIs.
 // cons is the number of simultaneous connections. If it's < 0 a new connection
 // is established for each URI.
-func (c *Client) DownloadIndicies() error {
+func (c *Client) DownloadIndiciesAsync() error {
 	c.InfoLogger.Println("starting index download.")
 	err := os.MkdirAll(c.IndexGZStaging, os.ModePerm)
 	if err != nil {
@@ -86,7 +94,7 @@ func (c *Client) DownloadIndicies() error {
 		filename = strings.ReplaceAll(filename, "/", "_")
 		filename = filename + ".gz"
 		c.InfoLogger.Printf("downloading: %s\tto: %s\n", c.RepoURIs[i], c.IndexGZStaging+"/"+filename)
-		go c.downloadFile(c.IndexGZStaging+"/"+filename, c.RepoURIs[i], ch)
+		go c.downloadFileAsync(c.IndexGZStaging+"/"+filename, c.RepoURIs[i], ch)
 	}
 	for i := 0; i < len(c.RepoURIs); i++ {
 		r := <-ch
@@ -101,7 +109,34 @@ func (c *Client) DownloadIndicies() error {
 	return nil
 }
 
-func (c *Client) downloadFile(filepath string, url string, ch chan result) {
+// DownloadIndicies synchronously downloads package Packages.gz from the specified repositories.
+func (c *Client) DownloadIndicies() error {
+	err := os.MkdirAll(c.IndexGZStaging, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	if len(c.RepoURIs) == 0 {
+		return nil
+	}
+
+	for i, v := range c.RepoURIs {
+		fmt.Println(v)
+		c.RepoURIs[i] = v + "/Packages.gz"
+		filename := strings.TrimPrefix(v, "http://")
+		filename = strings.TrimPrefix(filename, "https://")
+		filename = strings.ReplaceAll(filename, "/", "_")
+		filename = filename + ".gz"
+		c.InfoLogger.Printf("downloading: %s\tto: %s\n", c.RepoURIs[i], c.IndexGZStaging+"/"+filename)
+		err = c.downloadFile(c.IndexGZStaging+"/"+filename, c.RepoURIs[i])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *Client) downloadFileAsync(filepath string, url string, ch chan result) {
 	// Get the data
 	resp, err := http.Get(url)
 	if err != nil {
@@ -127,7 +162,30 @@ func (c *Client) downloadFile(filepath string, url string, ch chan result) {
 	ch <- result{message: fmt.Sprintf("successfully downloaded: %s\n", url), err: nil}
 }
 
-func (c *Client) UnpackIndicies() {
+func (c *Client) downloadFile(filepath string, url string) error {
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) UnpackIndiciesAsync() {
 	err := os.MkdirAll(c.IndexLocation, os.ModePerm)
 	if err != nil {
 		c.ErrorLogger.Fatalf("could not create directory %s for indexes %v", c.IndexLocation, err)
@@ -141,13 +199,32 @@ func (c *Client) UnpackIndicies() {
 
 	for _, file := range sources {
 		wg.Add(1)
-		go c.readAndExtractIndexGz(file, &wg)
+		go c.readAndExtractIndexGzAsync(file, &wg)
 	}
 
 	wg.Wait()
 }
 
-func (c *Client) readAndExtractIndexGz(file fs.FileInfo, wg *sync.WaitGroup) {
+func (c *Client) UnpackIndicies() error {
+	err := os.MkdirAll(c.IndexLocation, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	sources, err := ioutil.ReadDir(c.IndexGZStaging)
+	if err != nil {
+		return err
+	}
+	for _, file := range sources {
+		err = c.readAndExtractIndexGz(file)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *Client) readAndExtractIndexGzAsync(file fs.FileInfo, wg *sync.WaitGroup) {
 	err := os.MkdirAll(c.IndexLocation, os.ModePerm)
 	if err != nil {
 		c.ErrorLogger.Fatalf("could not create directory %s for indexes %v", c.IndexLocation, err)
@@ -167,6 +244,26 @@ func (c *Client) readAndExtractIndexGz(file fs.FileInfo, wg *sync.WaitGroup) {
 	}
 	c.InfoLogger.Printf("finished extracting %s", out.Name())
 	wg.Done()
+}
+
+func (c *Client) readAndExtractIndexGz(file fs.FileInfo) error {
+	err := os.MkdirAll(c.IndexLocation, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	out, err := os.Create(c.IndexLocation + "/" + file.Name())
+	if err != nil {
+		return err
+	}
+	fbytes, err := os.ReadFile(c.IndexGZStaging + "/" + file.Name())
+	if err != nil {
+		return err
+	}
+	err = gunzipWrite(out, fbytes)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func gunzipWrite(w io.Writer, data []byte) error {
